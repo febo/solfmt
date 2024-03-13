@@ -3,7 +3,7 @@ use std::io;
 use ansi_term::Colour as Color;
 use regex::Regex;
 
-const RX_STR: &str = r"^.+(DEBUG|INFO|TRACE) (.+)] ?(Program log:|Program|process_instruction:|solana_runtime:)? (.+)$";
+const RX_STR: &str = r"^.+(DEBUG|INFO|TRACE) ([^]]+)] ?(Program log:|Program|process_instruction:|solana_runtime:)? (.+)$";
 
 #[derive(Debug)]
 enum Importance {
@@ -122,6 +122,18 @@ mod tests {
         assert_eq!(
             formatted,
             "\u{1b}[34mDEBUG\u{1b}[0m \u{1b}[1;38;5;243mFg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS's signer privilege escalated\u{1b}[0m"
+        );
+    }
+
+    #[test]
+    fn square_brackets_on_program_log() {
+        let rx = Regex::new(RX_STR).unwrap();
+        let line = "[2022-12-13T20:55:47.950831000Z DEBUG solana_runtime::message_processor::stable_log] [ERROR] Invalid authority";
+        let formatted = format_line(&rx, line);
+        eprintln!("{}", formatted);
+        assert_eq!(
+            formatted,
+            "\u{1b}[34mDEBUG\u{1b}[0m \u{1b}[38;5;243m[ERROR] Invalid authority\u{1b}[0m"
         );
     }
 }
